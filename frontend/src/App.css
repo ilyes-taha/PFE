@@ -1,0 +1,227 @@
+body{
+margin:0;
+font-family:Segoe UI;
+background:#eef2f7;
+}
+
+*{
+box-sizing:border-box;
+}
+
+.app-container{
+display:flex;
+height:100vh;
+}
+
+/* LEFT SIDEBAR */
+
+.sidebar{
+width:340px;
+background:rgb(92, 39, 39);
+border-right:1px solid #ddd;
+padding:25px;
+overflow:auto;
+}
+
+.logo{
+margin-bottom:30px;
+font-size:34px;
+}
+
+.new-btn{
+width:100%;
+padding:15px;
+border:none;
+background:#ff0000;
+color:white;
+border-radius:12px;
+font-size:16px;
+font-weight:600;
+cursor:pointer;
+margin-bottom:30px;
+}
+.new-btn:hover{
+background:#854e4e;
+}
+
+
+.chat-item{
+display:flex;
+padding:15px;
+margin-bottom:15px;
+border-radius:14px;
+cursor:pointer;
+transition:.2s;
+}
+
+.chat-item:hover{
+background:#ff0000;
+}
+
+.active{
+background:#ff0000;
+}
+
+.avatar{
+width:50px;
+height:50px;
+border-radius:50%;
+background:#ff0000;
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-weight:bold;
+margin-right:14px;
+}
+
+.chat-preview{
+flex:1;
+}
+
+.last-message{
+margin-top:5px;
+color:#ffffff;
+}
+
+.badge{
+background:rgb(255, 0, 0);
+color:white;
+padding:3px 8px;
+border-radius:30px;
+display:inline-block;
+margin-top:8px;
+font-size:12px;
+}
+
+/* CHAT WINDOW */
+
+.chat-window{
+flex:1;
+display:flex;
+flex-direction:column;
+}
+
+.chat-header{
+background:rgb(211, 62, 62);
+padding:25px;
+font-size:24px;
+font-weight:bold;
+border-bottom:1px solid #ddd;
+}
+
+.messages{
+flex:1;
+padding:30px;
+overflow:auto;
+}
+
+.my-message{
+margin-left:auto;
+background:#dbeafe;
+padding:14px 18px;
+border-radius:18px;
+margin-bottom:18px;
+width:fit-content;
+}
+
+.other-message{
+background:white;
+padding:14px 18px;
+border-radius:18px;
+margin-bottom:18px;
+width:fit-content;
+box-shadow:0 1px 5px rgba(0,0,0,.08);
+}
+
+.delete-btn{
+margin-top:8px;
+background:#ef4444;
+color:white;
+border:none;
+padding:6px 10px;
+border-radius:8px;
+cursor:pointer;
+font-size:12px;
+}
+
+.message-box{
+display:flex;
+padding:20px;
+background:white;
+border-top:1px solid #ddd;
+}
+
+.message-box input{
+flex:1;
+padding:14px;
+border:1px solid #ccc;
+border-radius:12px;
+}
+
+.message-box button{
+margin-left:12px;
+background:#ff0000;
+border:none;
+color:white;
+padding:14px 25px;
+border-radius:12px;
+cursor:pointer;
+}
+
+/* MODAL */
+
+.modal-overlay{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.35);
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.modal-box{
+background:white;
+width:420px;
+padding:30px;
+border-radius:20px;
+}
+
+.modal-box h2{
+margin-top:0;
+}
+
+.modal-box input,
+.modal-box textarea{
+width:100%;
+padding:12px;
+margin-top:15px;
+border:1px solid #ccc;
+border-radius:10px;
+}
+
+.modal-box textarea{
+height:120px;
+}
+
+.modal-buttons{
+margin-top:20px;
+display:flex;
+justify-content:flex-end;
+gap:10px;
+}
+
+.send-btn{
+background:#ff0000;
+color:white;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+}
+
+.cancel-btn{
+background:#ddd;
+border:none;
+padding:12px 20px;
+border-radius:10px;
+}
