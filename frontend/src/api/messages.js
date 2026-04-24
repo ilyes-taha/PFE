@@ -1,4 +1,4 @@
-const API="http://127.0.0.1:8000/messages";
+const API = "http://127.0.0.1:8000/messages";
 
 
 
@@ -36,7 +36,7 @@ content
 ){
 
 const res=await fetch(
-"http://127.0.0.1:8000/messages/",
+`${API}/`,
 {
 method:"POST",
 
@@ -59,15 +59,41 @@ return await res.json();
 
 
 
-export async function deleteMessage(
-messageId
-){
+export async function getInbox(userId){
+
+const res=await fetch(
+`${API}/inbox/${userId}`
+);
+
+return await res.json();
+
+}
+
+
+
+export async function markAsRead(messageId){
 
 await fetch(
-`${API}/delete/${messageId}`,
+`${API}/read/${messageId}`,
 {
 method:"PUT"
 }
-)
+);
+
+}
+
+
+
+export async function deleteMessage(
+messageId,
+userId
+){
+
+await fetch(
+`${API}/delete/${messageId}?user_id=${userId}`,
+{
+method:"PUT"
+}
+);
 
 }

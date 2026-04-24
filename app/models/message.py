@@ -1,5 +1,6 @@
 from sqlalchemy import (
 Column,
+BigInteger,
 Integer,
 Text,
 Boolean,
@@ -20,37 +21,37 @@ class Message(Base):
 
 
     id_msg=Column(
-        Integer,
+        BigInteger,
         primary_key=True,
         index=True
     )
 
 
     sender_id=Column(
-        Integer,
+        BigInteger,
         ForeignKey("users.id"),
         nullable=False
     )
 
 
     receiver_id=Column(
-        Integer,
+        BigInteger,
         ForeignKey("users.id"),
         nullable=False
     )
 
 
     sender_role_id=Column(
-        Integer,
+        BigInteger,
         ForeignKey("role.id"),
-        nullable=False
+        nullable=True
     )
 
 
     receiver_role_id=Column(
-        Integer,
+        BigInteger,
         ForeignKey("role.id"),
-        nullable=False
+        nullable=True
     )
 
 

@@ -20,7 +20,7 @@ db:Session=Depends(get_db)
  return [
  {
    "id":u.id,
-   "name":u.email.split("@")[0]
+   "name":u.email.split("@")[0] if u.email else str(u.id)
  }
  for u in users
  ]

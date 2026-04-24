@@ -19,12 +19,18 @@ useState([]);
 
 const loadInbox=async()=>{
 
+try{
+
 const data=
 await getInbox(
 currentUser.id
 );
 
-setMessages(data);
+setMessages(data || []);
+
+}catch(error){
+console.error("Failed to load inbox:", error);
+}
 
 };
 

@@ -64,7 +64,7 @@ return ()=>clearInterval(
 interval
 );
 
-},[]);
+},[otherUserId]);
 
 
 

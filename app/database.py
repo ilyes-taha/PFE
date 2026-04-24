@@ -1,7 +1,9 @@
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DATABASE_URL = "postgresql://postgres:alita@127.0.0.1:7588/PFE"
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres:alita@127.0.0.1:7588/PFE")
 
 engine = create_engine(DATABASE_URL)
 

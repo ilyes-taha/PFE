@@ -29,6 +29,7 @@ reload={reload}
 currentUser={currentUser}
 selectedChat={selectedChat}
 reload={reload}
+setReload={setReload}
 />
 
 </div>

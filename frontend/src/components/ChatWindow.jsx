@@ -13,7 +13,8 @@ from "../api/messages";
 
 function ChatWindow({
 currentUser,
-selectedChat
+selectedChat,
+setReload
 }){
 
 const [messages,setMessages]=useState([]);
@@ -59,16 +60,23 @@ const handleSend=async()=>{
 
 if(!text.trim()) return;
 
+try{
 
 await sendMessage(
 currentUser.id,
 selectedChat,
 text
-)
+);
 
 setText("");
 
 loadConversation();
+
+setReload(prev=>!prev);
+
+}catch(error){
+console.error("Failed to send message:", error);
+}
 
 };
 
@@ -76,9 +84,17 @@ loadConversation();
 
 const handleDelete=async(id)=>{
 
-await deleteMessage(id);
+try{
+
+await deleteMessage(id, currentUser.id);
 
 loadConversation();
+
+setReload(prev=>!prev);
+
+}catch(error){
+console.error("Failed to delete message:", error);
+}
 
 };
 

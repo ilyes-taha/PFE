@@ -1,4 +1,4 @@
-from sqlalchemy import Column,Integer,DateTime
+from sqlalchemy import Column, BigInteger, DateTime, ForeignKey
 from sqlalchemy.sql import func
 
 from app.database import Base
@@ -10,20 +10,22 @@ class Conversation(Base):
 
 
     id=Column(
-        Integer,
+        BigInteger,
         primary_key=True,
         index=True
     )
 
 
     user1_id=Column(
-        Integer,
+        BigInteger,
+        ForeignKey("users.id"),
         nullable=False
     )
 
 
     user2_id=Column(
-        Integer,
+        BigInteger,
+        ForeignKey("users.id"),
         nullable=False
     )
 

@@ -15,6 +15,7 @@ const handleSend=async()=>{
 if(!content.trim()) return;
 
 await sendMessage(
+currentUser.id,
 receiverId,
 content
 );

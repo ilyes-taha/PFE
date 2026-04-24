@@ -112,11 +112,13 @@ def get_conversation(user1_id: int, user2_id: int, db: Session = Depends(get_db)
             and_(
                 Message.sender_id == user1_id,
                 Message.receiver_id == user2_id,
-                Message.deleted_by_sender == False
+                Message.deleted_by_sender == False,
+                Message.deleted_by_receiver == False
             ),
             and_(
                 Message.sender_id == user2_id,
                 Message.receiver_id == user1_id,
+                Message.deleted_by_sender == False,
                 Message.deleted_by_receiver == False
             )
         )
@@ -183,9 +185,7 @@ def mark_as_read(message_id: int, db: Session = Depends(get_db)):
 # ==============================
 
 @router.put("/delete/{message_id}")
-def delete_message(message_id: int, db: Session = Depends(get_db)):
-
-    user_id=message.sender_id # get from auth in real app
+def delete_message(message_id: int, user_id: int, db: Session = Depends(get_db)):
 
     message = db.query(Message).filter(Message.id_msg == message_id).first()
 
@@ -223,8 +223,14 @@ db:Session=Depends(get_db)
         db.query(Message)
         .filter(
             or_(
-                Message.sender_id==user_id,
-                Message.receiver_id==user_id
+                and_(
+                    Message.sender_id==user_id,
+                    Message.deleted_by_sender==False
+                ),
+                and_(
+                    Message.receiver_id==user_id,
+                    Message.deleted_by_receiver==False
+                )
             )
         )
         .order_by(
