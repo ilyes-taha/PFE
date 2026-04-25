@@ -53,6 +53,11 @@ content:content
 }
 );
 
+if(!res.ok){
+const err=await res.json().catch(()=>({}));
+throw new Error(err.detail || `Error ${res.status}`);
+}
+
 return await res.json();
 
 }

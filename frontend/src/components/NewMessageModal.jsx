@@ -11,6 +11,7 @@ currentUser
 
 const [receiver,setReceiver]=useState("");
 const [content,setContent]=useState("");
+const [error,setError]=useState("");
 
 if(!show) return null;
 
@@ -19,12 +20,15 @@ const handleSend=async()=>{
 
 if(!receiver || !content) return;
 
+setError("");
+
+try{
 
 await sendMessage(
 currentUser.id,
 parseInt(receiver),
 content
-)
+);
 
 /* refresh sidebar immediately */
 await refreshThreads();
@@ -40,6 +44,10 @@ setReceiver("");
 setContent("");
 
 onClose();
+
+}catch(err){
+setError(err.message || "Failed to send message");
+}
 
 };
 
@@ -65,6 +73,10 @@ onChange={(e)=>
 setContent(e.target.value)
 }
 />
+
+{error &&
+<p style={{color:"red"}}>{error}</p>
+}
 
 <div className="modal-buttons">
 
