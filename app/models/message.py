@@ -23,6 +23,7 @@ class Message(Base):
     id_msg=Column(
         BigInteger,
         primary_key=True,
+        autoincrement=True,
         index=True
     )
 

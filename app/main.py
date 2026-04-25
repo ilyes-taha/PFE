@@ -1,9 +1,22 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import users
 from app.routers import message
+from app.database import engine, Base
+import app.models.message  # noqa: F401 – ensure models are registered
+import app.models.user     # noqa: F401
+import app.models.role     # noqa: F401
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(

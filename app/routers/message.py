@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, and_
 from pydantic import BaseModel
@@ -76,10 +76,15 @@ db:Session=Depends(get_db)
 
     db.add(message)
 
-    db.commit()
-
-    db.refresh(message)
-
+    try:
+        db.commit()
+        db.refresh(message)
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )
 
     return message
 
