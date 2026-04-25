@@ -1,4 +1,4 @@
-const API="http://127.0.0.1:8000/users";
+const API="/users";
 
 export async function getUsers(){
 
