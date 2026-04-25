@@ -18,7 +18,9 @@ if(!show) return null;
 
 const handleSend=async()=>{
 
-if(!receiver || !content) return;
+const parsedReceiver=parseInt(receiver);
+
+if(!receiver || !content || isNaN(parsedReceiver)) return;
 
 setError("");
 
@@ -26,7 +28,7 @@ try{
 
 await sendMessage(
 currentUser.id,
-parseInt(receiver),
+parsedReceiver,
 content
 );
 
@@ -36,7 +38,7 @@ await refreshThreads();
 
 /* open conversation instantly */
 setSelectedChat(
-parseInt(receiver)
+parsedReceiver
 );
 
 
@@ -64,14 +66,27 @@ value={receiver}
 onChange={(e)=>
 setReceiver(e.target.value)
 }
+onKeyDown={(e)=>{
+if(e.key==="Enter"){
+e.preventDefault();
+document.getElementById("modal-content").focus();
+}
+}}
 />
 
 <textarea
+id="modal-content"
 placeholder="Write message"
 value={content}
 onChange={(e)=>
 setContent(e.target.value)
 }
+onKeyDown={(e)=>{
+if(e.key==="Enter" && e.ctrlKey){
+e.preventDefault();
+handleSend();
+}
+}}
 />
 
 {error &&

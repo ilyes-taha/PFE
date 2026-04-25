@@ -21,6 +21,8 @@ const [messages,setMessages]=useState([]);
 
 const [text,setText]=useState("");
 
+const [sendError,setSendError]=useState("");
+
 
 
 const loadConversation=async()=>{
@@ -60,6 +62,8 @@ const handleSend=async()=>{
 
 if(!text.trim()) return;
 
+setSendError("");
+
 try{
 
 await sendMessage(
@@ -70,14 +74,24 @@ text
 
 setText("");
 
+setSendError("");
+
 loadConversation();
 
 setReload(prev=>!prev);
 
 }catch(error){
 console.error("Failed to send message:", error);
+setSendError(error.message || "Failed to send");
 }
 
+};
+
+const handleKeyDown=(e)=>{
+if(e.key==="Enter" && !e.shiftKey){
+e.preventDefault();
+handleSend();
+}
 };
 
 
@@ -171,6 +185,10 @@ Delete
 
 <div className="message-box">
 
+{sendError &&
+<p style={{color:"red",margin:"0 0 8px 0",fontSize:"13px"}}>{sendError}</p>
+}
+
 <input
 value={text}
 onChange={(e)=>
@@ -178,6 +196,7 @@ setText(
 e.target.value
 )
 }
+onKeyDown={handleKeyDown}
 placeholder="Type message..."
 />
 
