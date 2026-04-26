@@ -4,19 +4,20 @@ import ChatWindow from "./components/ChatWindow";
 
 function App(){
 
-const [selectedChat,setSelectedChat]=useState(null);
-
-/* force refresh trigger */
-const [reload,setReload]=useState(false);
-
 const currentUser={
 id:5,
-name:"User 1"
+name:"Ilyes"
 };
+
+const [selectedChat,setSelectedChat]=useState(null);
+
+/* only ONCE */
+const [reload,setReload]=useState(false);
+
 
 return(
 
-<div className="app-container">
+<div className="app-layout">
 
 <Sidebar
 currentUser={currentUser}
@@ -38,4 +39,4 @@ setReload={setReload}
 
 }
 
-export default App;
+export default App

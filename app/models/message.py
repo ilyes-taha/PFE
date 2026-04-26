@@ -1,7 +1,6 @@
 from sqlalchemy import (
 Column,
 BigInteger,
-Integer,
 Text,
 Boolean,
 DateTime,
@@ -9,15 +8,12 @@ ForeignKey
 )
 
 from sqlalchemy.sql import func
-
 from app.database import Base
-
 
 
 class Message(Base):
 
     __tablename__="messages"
-
 
 
     id_msg=Column(
@@ -38,20 +34,6 @@ class Message(Base):
         BigInteger,
         ForeignKey("users.id"),
         nullable=False
-    )
-
-
-    sender_role_id=Column(
-        BigInteger,
-        ForeignKey("role.id"),
-        nullable=True
-    )
-
-
-    receiver_role_id=Column(
-        BigInteger,
-        ForeignKey("role.id"),
-        nullable=True
     )
 
 

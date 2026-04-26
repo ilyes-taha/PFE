@@ -1,4 +1,4 @@
-const API = "http://127.0.0.1:8000/messages";
+const API="http://127.0.0.1:8000/messages";
 
 
 
@@ -54,29 +54,44 @@ content:content
 );
 
 if(!res.ok){
-const err=await res.json().catch(()=>({}));
-throw new Error(err.detail || `Error ${res.status}`);
-}
 
-return await res.json();
+const err=
+await res.json()
+.catch(()=>({}));
 
-}
-
-
-
-export async function getInbox(userId){
-
-const res=await fetch(
-`${API}/inbox/${userId}`
+throw new Error(
+err.detail ||
+`Error ${res.status}`
 );
 
+}
+
 return await res.json();
 
 }
 
 
 
-export async function markAsRead(messageId){
+/* THIS WAS MISSING */
+export async function deleteMessage(
+messageId,
+userId
+){
+
+await fetch(
+`${API}/delete/${messageId}?user_id=${userId}`,
+{
+method:"PUT"
+}
+);
+
+}
+
+
+
+export async function markAsRead(
+messageId
+){
 
 await fetch(
 `${API}/read/${messageId}`,
@@ -89,13 +104,27 @@ method:"PUT"
 
 
 
-export async function deleteMessage(
-messageId,
+export async function getInbox(
 userId
 ){
 
+const res=await fetch(
+`${API}/inbox/${userId}`
+);
+
+return await res.json();
+
+}
+
+
+
+export async function deleteConversation(
+user1,
+user2
+){
+
 await fetch(
-`${API}/delete/${messageId}?user_id=${userId}`,
+`${API}/delete-conversation/${user1}/${user2}`,
 {
 method:"PUT"
 }

@@ -1,7 +1,16 @@
 import {useEffect,useState} from "react";
-import {getThreads} from "../api/messages";
-import {getUsers} from "../api/users";
-import NewMessageModal from "./NewMessageModal";
+
+import {
+getThreads,
+deleteConversation
+}
+from "../api/messages";
+
+import {getUsers}
+from "../api/users";
+
+import NewMessageModal
+from "./NewMessageModal";
 
 
 function Sidebar({
@@ -13,11 +22,13 @@ reload
 
 const [threads,setThreads]=useState([]);
 const [showModal,setShowModal]=useState(false);
-
-/* users from database */
 const [users,setUsers]=useState({});
 
 
+
+/* =====================
+LOAD THREADS
+===================== */
 
 const loadThreads=async()=>{
 
@@ -28,10 +39,11 @@ await getThreads(
 currentUser.id
 );
 
-setThreads(data || []);
+setThreads(
+data||[]
+);
 
 }
-
 catch(error){
 console.log(error);
 }
@@ -40,6 +52,10 @@ console.log(error);
 
 
 
+/* =====================
+LOAD USERS
+===================== */
+
 const loadUsers=async()=>{
 
 try{
@@ -47,18 +63,15 @@ try{
 const data=
 await getUsers();
 
-const userMap={};
+const map={};
 
-data.forEach(
-user=>{
-userMap[user.id]=user.name;
-}
-);
+data.forEach(user=>{
+map[user.id]=user.name;
+});
 
-setUsers(userMap);
+setUsers(map);
 
 }
-
 catch(error){
 console.log(error);
 }
@@ -68,12 +81,59 @@ console.log(error);
 
 
 useEffect(()=>{
+loadThreads();
+},
+[
+reload,
+currentUser.id
+]);
+
+
+useEffect(()=>{
+loadUsers();
+},[]);
+
+
+
+
+const handleDeleteConversation=async(
+otherUser
+)=>{
+
+if(
+window.confirm(
+"Delete this conversation?"
+)
+){
+
+try{
+
+await deleteConversation(
+currentUser.id,
+otherUser
+);
+
+if(
+selectedChat===otherUser
+){
+setSelectedChat(
+null
+);
+}
 
 loadThreads();
 
-loadUsers();
+}
+catch(error){
+console.log(error);
+alert(
+"Conversation delete failed"
+);
+}
 
-},[reload]);
+}
+
+};
 
 
 
@@ -87,12 +147,14 @@ return(
 Messages
 </h1>
 
+
 <p>
 Logged in as:
 <b>
  {users[currentUser.id] || currentUser.id}
 </b>
 </p>
+
 
 
 <button
@@ -126,57 +188,80 @@ threads.map(thread=>(
 
 <div
 key={thread.other_user}
-
-className={
-selectedChat===thread.other_user
-?
-"chat-item active"
-:
-"chat-item"
-}
-
 onClick={()=>
 setSelectedChat(
 thread.other_user
 )
 }
+className={
+selectedChat===thread.other_user
+? "chat-item active"
+: thread.unread_count>0
+? "chat-item unread"
+: "chat-item"
+}
 >
 
-<div className="avatar">
 
+<div className="avatar">
 {
 users[thread.other_user]
 ?
-users[thread.other_user]
+users[
+thread.other_user
+]
 .charAt(0)
 .toUpperCase()
 :
 thread.other_user
 }
-
 </div>
 
 
 
 <div className="chat-preview">
 
-<div>
-<b>
 
+<div className="chat-top">
+
+<span className="chat-name">
 {
 users[thread.other_user]
-?
-users[thread.other_user]
-:
+||
 `User ${thread.other_user}`
 }
+</span>
 
-</b>
+
+<span className="chat-time">
+{
+thread.last_time
+?
+new Date(
+thread.last_time
+).toLocaleTimeString(
+[],
+{
+hour:"2-digit",
+minute:"2-digit"
+}
+)
+:
+""
+}
+</span>
+
 </div>
 
 
 
-<div className="last-message">
+<div className={
+thread.unread_count>0
+?
+"last-message unread-text"
+:
+"last-message"
+}>
 {thread.last_message}
 </div>
 
@@ -184,12 +269,26 @@ users[thread.other_user]
 
 {
 thread.unread_count>0 &&
-
 <span className="badge">
 {thread.unread_count}
 </span>
-
 }
+
+
+
+<button
+className="conversation-delete-btn"
+onClick={(e)=>{
+e.stopPropagation();
+
+handleDeleteConversation(
+thread.other_user
+);
+}}
+>
+Delete
+</button>
+
 
 
 </div>
@@ -206,11 +305,14 @@ thread.unread_count>0 &&
 
 <NewMessageModal
 show={showModal}
-onClose={()=>setShowModal(false)}
+onClose={()=>
+setShowModal(false)
+}
 setSelectedChat={setSelectedChat}
 refreshThreads={loadThreads}
 currentUser={currentUser}
 />
+
 
 </>
 
@@ -218,4 +320,4 @@ currentUser={currentUser}
 
 }
 
-export default Sidebar;
+export default Sidebar

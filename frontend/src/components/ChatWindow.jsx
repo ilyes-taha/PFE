@@ -1,47 +1,89 @@
-import React,{
-useEffect,
-useState
-} from "react";
+import {useEffect,useState} from "react";
 
 import {
 getConversation,
 sendMessage,
-deleteMessage
+deleteMessage,
+markAsRead
 }
 from "../api/messages";
+
+import {getUsers}
+from "../api/users";
 
 
 function ChatWindow({
 currentUser,
-selectedChat,
-setReload
+selectedChat
 }){
 
 const [messages,setMessages]=useState([]);
-
 const [text,setText]=useState("");
+const [users,setUsers]=useState({});
 
-const [sendError,setSendError]=useState("");
 
 
+/* =========================
+LOAD USERS
+========================= */
+
+const loadUsers=async()=>{
+
+try{
+
+const data=await getUsers();
+
+const map={};
+
+data.forEach(user=>{
+map[user.id]=user.name;
+});
+
+setUsers(map);
+
+}
+catch(error){
+console.log(error);
+}
+
+};
+
+
+
+/* =========================
+LOAD CONVERSATION
+========================= */
 
 const loadConversation=async()=>{
 
 if(!selectedChat) return;
 
-
 try{
 
-const data=
-await getConversation(
+const data=await getConversation(
 currentUser.id,
 selectedChat
 );
 
-setMessages(data || []);
+
+for(const msg of data){
+
+if(
+msg.receiver_id===currentUser.id &&
+!msg.read_at
+){
+await markAsRead(
+msg.id_msg
+);
+}
 
 }
 
+setMessages(
+data||[]
+);
+
+}
 catch(error){
 console.log(error);
 }
@@ -51,18 +93,27 @@ console.log(error);
 
 
 useEffect(()=>{
+loadUsers();
+},[]);
 
+
+useEffect(()=>{
 loadConversation();
+},
+[
+selectedChat,
+currentUser.id
+]);
 
-},[selectedChat]);
 
 
+/* =========================
+SEND
+========================= */
 
 const handleSend=async()=>{
 
 if(!text.trim()) return;
-
-setSendError("");
 
 try{
 
@@ -74,40 +125,47 @@ text
 
 setText("");
 
-setSendError("");
-
 loadConversation();
 
-setReload(prev=>!prev);
-
-}catch(error){
-console.error("Failed to send message:", error);
-setSendError(error.message || "Failed to send");
+}
+catch(error){
+console.log(error);
+alert(
+error.message ||
+"Message failed to send"
+);
 }
 
 };
 
-const handleKeyDown=(e)=>{
-if(e.key==="Enter" && !e.shiftKey){
-e.preventDefault();
-handleSend();
-}
-};
 
 
+/* =========================
+DELETE
+========================= */
 
 const handleDelete=async(id)=>{
 
+if(
+window.confirm(
+"Delete this message?"
+)
+){
+
 try{
 
-await deleteMessage(id, currentUser.id);
+await deleteMessage(
+id,
+currentUser.id
+);
 
 loadConversation();
 
-setReload(prev=>!prev);
+}
+catch(error){
+console.log(error);
+}
 
-}catch(error){
-console.error("Failed to delete message:", error);
 }
 
 };
@@ -117,15 +175,11 @@ console.error("Failed to delete message:", error);
 if(!selectedChat){
 
 return(
-
 <div className="chat-window">
-
 <div className="chat-header">
 Select a conversation
 </div>
-
 </div>
-
 )
 
 }
@@ -136,8 +190,13 @@ return(
 
 <div className="chat-window">
 
+
 <div className="chat-header">
-Chat with {selectedChat}
+Chat with {
+users[selectedChat]
+||
+selectedChat
+}
 </div>
 
 
@@ -152,27 +211,92 @@ key={msg.id_msg}
 className={
 msg.sender_id===currentUser.id
 ?
-"my-message"
+"message-bubble sent"
 :
-"other-message"
+"message-bubble received"
 }
 >
 
-<div>
+<div className="message-text">
 {msg.content}
 </div>
 
 
+
+<div className="message-meta">
+
+<span className="message-time">
+{
+new Date(
+msg.sent_time
+).toLocaleTimeString(
+[],
+{
+hour:"2-digit",
+minute:"2-digit"
+}
+)
+}
+</span>
+
+
+{
+msg.sender_id===currentUser.id &&
+
+<span className="seen-status">
+{
+msg.read_at
+?
+"✓✓ Seen"
+:
+"✓ Sent"
+}
+</span>
+
+}
+
+</div>
+
+
+
+{
+msg.sender_id===currentUser.id && (
+
+<div className="message-actions">
+
+
 <button
-className="delete-btn"
+className="icon-btn"
+title="Edit"
+onClick={()=>
+alert(
+"Edit feature later"
+)
+}
+>
+✏️
+</button>
+
+
+
+<button
+className="icon-btn delete-icon"
+title="Delete"
 onClick={()=>
 handleDelete(
 msg.id_msg
 )
 }
 >
-Delete
+🗑️
 </button>
+
+
+</div>
+
+)
+}
+
 
 </div>
 
@@ -183,11 +307,8 @@ Delete
 
 
 
-<div className="message-box">
 
-{sendError &&
-<p style={{color:"red",margin:"0 0 8px 0",fontSize:"13px"}}>{sendError}</p>
-}
+<div className="chat-input">
 
 <input
 value={text}
@@ -196,9 +317,9 @@ setText(
 e.target.value
 )
 }
-onKeyDown={handleKeyDown}
 placeholder="Type message..."
 />
+
 
 <button
 onClick={handleSend}
@@ -208,10 +329,11 @@ Send
 
 </div>
 
+
 </div>
 
 )
 
 }
 
-export default ChatWindow;
+export default ChatWindow
