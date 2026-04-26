@@ -23,10 +23,6 @@ const [users,setUsers]=useState({});
 
 
 
-/* =========================
-LOAD USERS
-========================= */
-
 const loadUsers=async()=>{
 
 try{
@@ -49,10 +45,6 @@ console.log(error);
 };
 
 
-
-/* =========================
-LOAD CONVERSATION
-========================= */
 
 const loadConversation=async()=>{
 
@@ -107,10 +99,6 @@ currentUser.id
 
 
 
-/* =========================
-SEND
-========================= */
-
 const handleSend=async()=>{
 
 if(!text.trim()) return;
@@ -140,15 +128,11 @@ error.message ||
 
 
 
-/* =========================
-DELETE
-========================= */
-
 const handleDelete=async(id)=>{
 
 if(
 window.confirm(
-"Delete this message?"
+"Delete this message for everyone?"
 )
 ){
 
@@ -218,7 +202,19 @@ msg.sender_id===currentUser.id
 >
 
 <div className="message-text">
-{msg.content}
+{
+msg.is_deleted
+?
+(
+msg.sender_id===currentUser.id
+?
+"🚫 You deleted this message"
+:
+"🚫 This message was deleted"
+)
+:
+msg.content
+}
 </div>
 
 
@@ -260,7 +256,8 @@ msg.read_at
 
 
 {
-msg.sender_id===currentUser.id && (
+msg.sender_id===currentUser.id &&
+!msg.is_deleted && (
 
 <div className="message-actions">
 
@@ -268,11 +265,36 @@ msg.sender_id===currentUser.id && (
 <button
 className="icon-btn"
 title="Edit"
-onClick={()=>
-alert(
-"Edit feature later"
-)
+onClick={async()=>{
+
+const updated=prompt(
+"Edit message",
+msg.content
+);
+
+if(
+updated &&
+updated.trim()
+){
+
+await fetch(
+`http://127.0.0.1:8000/messages/edit/${msg.id_msg}`,
+{
+method:"PUT",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+content:updated
+})
 }
+);
+
+loadConversation();
+
+}
+
+}}
 >
 ✏️
 </button>
@@ -281,7 +303,7 @@ alert(
 
 <button
 className="icon-btn delete-icon"
-title="Delete"
+title="Delete for everyone"
 onClick={()=>
 handleDelete(
 msg.id_msg

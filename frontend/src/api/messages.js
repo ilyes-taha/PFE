@@ -29,6 +29,7 @@ return await res.json();
 
 
 
+/* back to normal text messaging */
 export async function sendMessage(
 senderId,
 receiverId,
@@ -53,6 +54,7 @@ content:content
 }
 );
 
+
 if(!res.ok){
 
 const err=
@@ -72,7 +74,6 @@ return await res.json();
 
 
 
-/* THIS WAS MISSING */
 export async function deleteMessage(
 messageId,
 userId

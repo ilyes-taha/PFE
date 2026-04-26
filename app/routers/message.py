@@ -14,16 +14,12 @@ prefix="/messages",
 tags=["Messages"]
 )
 
-
-# =========================
-# SCHEMA
-# =========================
-
 class MessageCreate(BaseModel):
     sender_id:int
     receiver_id:int
     content:str
-
+class EditMessage(BaseModel):
+    content:str
 
 
 # =========================
@@ -36,21 +32,13 @@ data:MessageCreate,
 db:Session=Depends(get_db)
 ):
 
-    sender=(
-      db.query(User)
-      .filter(
-         User.id==data.sender_id
-      )
-      .first()
-    )
+    sender=db.query(User).filter(
+      User.id==data.sender_id
+    ).first()
 
-    receiver=(
-      db.query(User)
-      .filter(
-         User.id==data.receiver_id
-      )
-      .first()
-    )
+    receiver=db.query(User).filter(
+      User.id==data.receiver_id
+    ).first()
 
 
     if not sender or not receiver:
@@ -67,66 +55,32 @@ db:Session=Depends(get_db)
         )
 
 
-    # Prestataire cannot chat with prestataire
-    # Demandeur cannot chat with demandeur
     if sender.role_id==receiver.role_id:
         raise HTTPException(
-            status_code=403,
-            detail="Users with same role cannot chat"
+           status_code=403,
+           detail="Users with same role cannot chat"
         )
 
 
-    try:
-
-        message=Message(
-            sender_id=sender.id,
-            receiver_id=receiver.id,
-            content=data.content
-        )
-
-        db.add(message)
-        db.commit()
-        db.refresh(message)
-
-        return message
-
-    except Exception as e:
-
-        db.rollback()
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-
-# =========================
-# INBOX
-# =========================
-
-@router.get("/inbox/{user_id}")
-def get_inbox(
-user_id:int,
-db:Session=Depends(get_db)
-):
-
-    return (
-      db.query(Message)
-      .filter(
-         Message.receiver_id==user_id,
-         Message.deleted_by_receiver==False
-      )
-      .order_by(
-         Message.sent_time.desc()
-      )
-      .all()
+    msg=Message(
+      sender_id=sender.id,
+      receiver_id=receiver.id,
+      content=data.content
     )
+
+    db.add(msg)
+    db.commit()
+    db.refresh(msg)
+
+    return msg
 
 
 
 # =========================
 # CONVERSATION
+# IMPORTANT:
+# removed deleted filters
+# so deleted message stays visible
 # =========================
 
 @router.get(
@@ -143,22 +97,20 @@ db:Session=Depends(get_db)
       .filter(
         or_(
 
-           and_(
-             Message.sender_id==user1_id,
-             Message.receiver_id==user2_id,
-             Message.deleted_by_sender==False
-           ),
+          and_(
+            Message.sender_id==user1_id,
+            Message.receiver_id==user2_id
+          ),
 
-           and_(
-             Message.sender_id==user2_id,
-             Message.receiver_id==user1_id,
-             Message.deleted_by_receiver==False
-           )
+          and_(
+            Message.sender_id==user2_id,
+            Message.receiver_id==user1_id
+          )
 
         )
       )
       .order_by(
-         Message.sent_time.asc()
+        Message.sent_time.asc()
       )
       .all()
     )
@@ -180,16 +132,10 @@ db:Session=Depends(get_db)
     messages=(
       db.query(Message)
       .filter(
-         or_(
-            and_(
-               Message.sender_id==user_id,
-               Message.deleted_by_sender==False
-            ),
-            and_(
-               Message.receiver_id==user_id,
-               Message.deleted_by_receiver==False
-            )
-         )
+        or_(
+          Message.sender_id==user_id,
+          Message.receiver_id==user_id
+        )
       )
       .order_by(
         Message.sent_time.desc()
@@ -200,27 +146,32 @@ db:Session=Depends(get_db)
 
     threads={}
 
-
     for msg in messages:
 
         other_user=(
-          msg.receiver_id
-          if msg.sender_id==user_id
-          else msg.sender_id
+         msg.receiver_id
+         if msg.sender_id==user_id
+         else msg.sender_id
         )
 
 
         if other_user not in threads:
 
+            preview=(
+              "This message was deleted"
+              if msg.is_deleted
+              else msg.content
+            )
+
             threads[other_user]={
-              "other_user":other_user,
-              "last_message":msg.content,
-              "last_time":msg.sent_time,
-              "unread_count":0
+               "other_user":other_user,
+               "last_message":preview,
+               "last_time":msg.sent_time,
+               "unread_count":0
             }
 
 
-        if (
+        if(
           msg.receiver_id==user_id
           and
           msg.read_at is None
@@ -231,13 +182,40 @@ db:Session=Depends(get_db)
 
 
     return list(
-       threads.values()
+      threads.values()
     )
 
 
+@router.put("/edit/{message_id}")
+def edit_message(
+message_id:int,
+data:EditMessage,
+db:Session=Depends(get_db)
+):
 
+    msg=(
+      db.query(Message)
+      .filter(
+        Message.id_msg==message_id
+      )
+      .first()
+    )
+
+    if not msg:
+        raise HTTPException(
+          status_code=404,
+          detail="Message not found"
+        )
+
+    msg.content=data.content
+
+    db.commit()
+
+    return {
+      "message":"updated"
+    }
 # =========================
-# MARK READ
+# READ
 # =========================
 
 @router.put("/read/{message_id}")
@@ -249,30 +227,28 @@ db:Session=Depends(get_db)
     msg=(
       db.query(Message)
       .filter(
-         Message.id_msg==message_id
+       Message.id_msg==message_id
       )
       .first()
     )
 
     if not msg:
-        raise HTTPException(
-          status_code=404,
-          detail="Not found"
-        )
+       raise HTTPException(
+         status_code=404,
+         detail="Not found"
+       )
 
 
     msg.read_at=datetime.utcnow()
 
     db.commit()
 
-    return {
-      "message":"read"
-    }
+    return {"message":"read"}
 
 
 
 # =========================
-# DELETE SINGLE MESSAGE
+# DELETE FOR EVERYONE
 # =========================
 
 @router.put("/delete/{message_id}")
@@ -293,30 +269,25 @@ db:Session=Depends(get_db)
 
     if not msg:
         raise HTTPException(
-           status_code=404,
-           detail="Not found"
+          status_code=404,
+          detail="Not found"
         )
 
 
-    if msg.sender_id==user_id:
-        msg.deleted_by_sender=True
-
-    elif msg.receiver_id==user_id:
-        msg.deleted_by_receiver=True
-
-    else:
+    if msg.sender_id!=user_id:
         raise HTTPException(
-           status_code=403,
-           detail="Forbidden"
+          status_code=403,
+          detail="Only sender can delete"
         )
 
 
+    msg.is_deleted=True
     msg.delete_time=datetime.utcnow()
 
     db.commit()
 
     return {
-       "message":"deleted"
+      "message":"deleted for everyone"
     }
 
 
@@ -351,18 +322,10 @@ db:Session=Depends(get_db)
 
         )
       )
-      .all()
+      .delete(
+        synchronize_session=False
+      )
     )
-
-
-    for msg in messages:
-
-        if msg.sender_id==user1_id:
-            msg.deleted_by_sender=True
-
-        if msg.receiver_id==user1_id:
-            msg.deleted_by_receiver=True
-
 
     db.commit()
 

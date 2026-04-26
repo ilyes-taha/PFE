@@ -41,8 +41,6 @@ class Message(Base):
         Text,
         nullable=False
     )
-
-
     sent_time=Column(
         DateTime,
         server_default=func.now()
@@ -62,6 +60,13 @@ class Message(Base):
 
 
     deleted_by_receiver=Column(
+        Boolean,
+        default=False
+    )
+
+
+    # delete for everyone
+    is_deleted=Column(
         Boolean,
         default=False
     )

@@ -5,7 +5,7 @@ import ChatWindow from "./components/ChatWindow";
 function App(){
 
 const currentUser={
-id:5,
+id:2,
 name:"Ilyes"
 };
 
